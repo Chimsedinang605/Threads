@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Threads</string>
+
+
+    <string name="facebook_app_id">537138306071000</string>
+    <string name="fb_login_protocol_scheme">fb537138306071000</string>
+    <string name="facebook_client_token">d2ae0de80ac0c90da2f5b70c0c7624bd</string>
+
+
+</resources>
