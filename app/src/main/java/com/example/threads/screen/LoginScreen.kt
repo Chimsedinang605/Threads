@@ -1,5 +1,6 @@
 package com.example.threads.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,10 +13,12 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -23,15 +26,32 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.threads.R
 import com.example.threads.navigation.Routes
+import com.example.threads.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController) {
-    var email by remember { mutableStateOf("") }
+    var emailOrUsername by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val authViewModel: AuthViewModel = viewModel()
+    val firebaseUser by authViewModel.firebaseUser.observeAsState(null)
+
+    LaunchedEffect(firebaseUser) {
+
+        if( firebaseUser != null) {
+            navController.navigate(Routes.BottomNav.routes) {
+                popUpTo(navController.graph.startDestinationId)
+                launchSingleTop = true
+            }
+        }
+    }
+
 
     val gradientColors = listOf(
         Color(0xFFF8F8FF), // Very Light Gray
@@ -98,8 +118,8 @@ fun LoginScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(30.dp))
                 // Username/email input field
                 OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
+                    value = emailOrUsername,
+                    onValueChange = { emailOrUsername = it },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email
                     ),
@@ -190,6 +210,19 @@ fun LoginScreen(navController: NavController) {
                 // Log in button
                 ElevatedButton(onClick = {
 //                    logic
+                    when {
+                        emailOrUsername.isEmpty() -> {
+                            Toast.makeText(context, "Vui lòng nhập email hoặc username.", Toast.LENGTH_SHORT).show()
+                        }
+                        password.isEmpty() -> {
+                            Toast.makeText(context, "Vui lòng nhập mật khẩu.", Toast.LENGTH_SHORT).show()
+                        }
+
+                        else -> {
+                            authViewModel.login( emailOrUsername, password)
+                        }
+                    }
+
                 },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
