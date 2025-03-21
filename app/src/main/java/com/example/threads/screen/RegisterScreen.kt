@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,7 +65,7 @@ fun RegisterScresn( navController: NavController  ) {
     val context = LocalContext.current
 
     val authViewModel : AuthViewModel = viewModel()
-//    val firebaseUser by authViewModel.firebaseUser.observe()
+    val firebaseUser by authViewModel.firebaseUser.observeAsState(null)
 
     val launcher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {
@@ -73,14 +74,23 @@ fun RegisterScresn( navController: NavController  ) {
         }
 
     val permissionlauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
-            isGranted : Boolean ->
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
 
             if (isGranted) {
 
-            }else{
+            } else {
 
             }
+    }
+
+    LaunchedEffect(firebaseUser) {
+
+        if( firebaseUser != null) {
+            navController.navigate(Routes.BottomNav.routes) {
+                popUpTo(navController.graph.startDestinationId)
+                launchSingleTop = true
+            }
+        }
     }
 
     val gradientColors = listOf(
@@ -131,8 +141,8 @@ fun RegisterScresn( navController: NavController  ) {
                 )
 
                 Image(
-                    painter = if (imageUri == null) painterResource(id = R.drawable.person) else
-                        rememberAsyncImagePainter(imageUri),
+                    painter = if (imageUri == null) painterResource(id = R.drawable.person)
+                    else rememberAsyncImagePainter(imageUri),
                     contentDescription = "Thread Logo"
                     ,modifier = Modifier
                         .size(100.dp)
@@ -286,18 +296,27 @@ fun RegisterScresn( navController: NavController  ) {
                 Spacer(modifier = Modifier.height(40.dp))
 
                 // Log in button
-                ElevatedButton(onClick = {
-//                    logic
-//
-                    if (name.isEmpty() || email.isEmpty() || password.isEmpty() || imageUri == null ) {
-                        Toast.makeText(context, "Điền hết chỗ trống.", Toast.LENGTH_SHORT).show()
-                    } else {
-
+                ElevatedButton(
+                    onClick = {
+                        when {
+                            name.isEmpty() -> {
+                                Toast.makeText(context, "Vui lòng nhập tên.", Toast.LENGTH_SHORT).show()
+                            }
+                            email.isEmpty() -> {
+                                Toast.makeText(context, "Vui lòng nhập email.", Toast.LENGTH_SHORT).show()
+                            }
+                            password.isEmpty() -> {
+                                Toast.makeText(context, "Vui lòng nhập mật khẩu.", Toast.LENGTH_SHORT).show()
+                            }
+                            imageUri == null -> {
+                                Toast.makeText(context, "Vui lòng chọn ảnh.", Toast.LENGTH_SHORT).show()
+                            }
+                            else -> {
+                                authViewModel.register(name, username, email, password, imageUri!! , context)
+                            }
+                        }
                     }
-
-
-
-                },
+                    ,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),

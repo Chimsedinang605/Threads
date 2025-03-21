@@ -77,6 +77,8 @@ dependencies {
     implementation("com.google.firebase:firebase-storage")
 
 //    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+    implementation("androidx.compose.runtime:runtime-livedata:1.7.8")
+
 
     implementation ("com.facebook.android:facebook-login:latest.release")
 
