@@ -45,13 +45,12 @@ import com.example.threads.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScresn( navController: NavController  ) {
+fun RegisterScreen( navController: NavController  ) {
 
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
     val permissionToRequest =
@@ -74,7 +73,8 @@ fun RegisterScresn( navController: NavController  ) {
         }
 
     val permissionlauncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+            isGranted: Boolean ->
 
             if (isGranted) {
 
@@ -141,9 +141,9 @@ fun RegisterScresn( navController: NavController  ) {
                 )
 
                 Image(
-                    painter = if (imageUri == null) painterResource(id = R.drawable.person)
+                    painter = if (imageUri == null) painterResource(id = R.drawable.profile)
                     else rememberAsyncImagePainter(imageUri),
-                    contentDescription = "Thread Logo"
+                    contentDescription = "profile"
                     ,modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
@@ -308,11 +308,9 @@ fun RegisterScresn( navController: NavController  ) {
                             password.isEmpty() -> {
                                 Toast.makeText(context, "Vui lòng nhập mật khẩu.", Toast.LENGTH_SHORT).show()
                             }
-                            imageUri == null -> {
-                                Toast.makeText(context, "Vui lòng chọn ảnh.", Toast.LENGTH_SHORT).show()
-                            }
+
                             else -> {
-                                authViewModel.register(name, username, email, password, imageUri!! , context)
+                                authViewModel.register(name, username, email, password ,context, imageUri)
                             }
                         }
                     }
