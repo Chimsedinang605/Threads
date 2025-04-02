@@ -1,31 +1,25 @@
 package com.example.threads.viewmodel
 
 import android.content.Context
-import android.util.Log
-import android.util.Patterns
+import android.net.Uri
+import android.util.*
 import android.widget.Toast
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.example.threads.Utils.SharePref
-import com.example.threads.model.UserModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import androidx.lifecycle.*
+import com.cloudinary.android.*
+import com.cloudinary.android.callback.*
+import com.example.threads.Data.*
+import com.example.threads.model.*
+import com.google.firebase.auth.*
+import com.google.firebase.database.*
 
 class AuthViewModel: ViewModel() {
+
     val auth = FirebaseAuth.getInstance()
     private val db = FirebaseDatabase.getInstance()
     val userRef = db.reference.child("users")
-
     private val _firebaseUser = MutableLiveData<FirebaseUser?>()
     val firebaseUser: LiveData<FirebaseUser?> = _firebaseUser
-
     private val _error = MutableLiveData<String>()
-    val error: LiveData<String> = _error
 
     init {
         _firebaseUser.value = auth.currentUser
@@ -36,103 +30,46 @@ class AuthViewModel: ViewModel() {
         return pattern.matcher(email).matches()
     }
 
-    fun login(userIdentifier: String, password: String, ) {
+    fun login(userIdentifier: String, password: String) {
 
         if (userIdentifier.contains("@")) {
-
-
             if (isEmail(userIdentifier)) {
                 loginWithFirebaseAuth(userIdentifier, password)
             } else {
                 loginWithUsername(userIdentifier, password)
             }
-
         }
-
-
-//        auth.signInWithEmailAndPassword(email, password)
-//            .addOnCompleteListener{
-//
-//                if (it.isSuccessful){
-//                    _firebaseUser.postValue(auth.currentUser)
-//                }else{
-//                    _error.postValue("Đăng nhập thất bại: ${it.exception?.message}")
-//                }
-//
-//            }
-
-//
-//        // Query the database by username
-//        userRef.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(
-//            object : ValueEventListener {
-//                override fun onDataChange(dataSnapshot: DataSnapshot) {
-//                    if (dataSnapshot.exists()) {
-//                        for (userSnapshot in dataSnapshot.children) {
-//                            val userData = userSnapshot.getValue(UserModel::class.java)
-//
-//                            if (userData != null && userData.password == password) {
-//                                // If user exists and password matches, sign in with Firebase Auth
-//                                if (userData.email.isNotEmpty()) {
-//                                    auth.signInWithEmailAndPassword(userData.email, password)
-//                                        .addOnCompleteListener { task ->
-//                                            if (task.isSuccessful) {
-//                                                _firebaseUser.postValue(auth.currentUser)
-//                                            } else {
-//                                                _error.postValue("Đăng nhập Firebase thất bại: ${task.exception?.message}")
-//                                            }
-//                                        }
-//                                } else {
-//                                    _error.postValue("Email không hợp lệ")
-//                                }
-//                                return
-//                            }
-//                        }
-//                        _error.postValue("Sai mật khẩu")
-//                    } else {
-//                        _error.postValue("Không tìm thấy người dùng")
-//                    }
-//                }
-//
-//                override fun onCancelled(dataError: DatabaseError) {
-//                    _error.postValue("Lỗi kết nối cơ sở dữ liệu: ${dataError.message}")
-//                }
-//            })
-
-
     }
-
-
 
     private fun loginWithUsername(username: String, password: String) {
         userRef.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(
             object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     if (dataSnapshot.exists()) {
-                            for (userSnapshot in dataSnapshot.children) {
-                                val userData = userSnapshot.getValue(UserModel::class.java)
+                        for (userSnapshot in dataSnapshot.children) {
+                            val userData = userSnapshot.getValue(UserModel::class.java)
 
-                                if (userData != null) {
-                                    if (userData.password == password) {
-                                        // Kiểm tra email hợp lệ trước khi dùng Firebase Auth
-                                        if (userData.email.isNotEmpty() && isEmail(userData.email)) {
-                                            auth.signInWithEmailAndPassword(userData.email, password)
-                                                .addOnCompleteListener { task ->
-                                                    if (task.isSuccessful) {
-                                                        _firebaseUser.postValue(auth.currentUser)
-                                                    } else {
-                                                        _error.postValue("Đăng nhập Firebase thất bại: ${task.exception?.message}")
-                                                    }
+                            if (userData != null) {
+                                if (userData.password == password) {
+                                    // Kiểm tra email hợp lệ trước khi dùng Firebase Auth
+                                    if (userData.email.isNotEmpty() && isEmail(userData.email)) {
+                                        auth.signInWithEmailAndPassword(userData.email, password)
+                                            .addOnCompleteListener { task ->
+                                                if (task.isSuccessful) {
+                                                    _firebaseUser.postValue(auth.currentUser)
+                                                } else {
+                                                    _error.postValue("Đăng nhập Firebase thất bại: ${task.exception?.message}")
                                                 }
-                                        } else {
-                                            _error.postValue("Email không hợp lệ")
-                                        }
-                                        return
+                                            }
+                                    } else {
+                                        _error.postValue("Email không hợp lệ")
                                     }
+                                    return
                                 }
                             }
-                            _error.postValue("Sai mật khẩu")
+                        }
+                        _error.postValue("Sai mật khẩu")
                     } else {
-
                         _error.postValue("Không tìm thấy người dùng")
                     }
                 }
@@ -144,10 +81,9 @@ class AuthViewModel: ViewModel() {
     }
 
 
-private fun loginWithFirebaseAuth(email: String, password: String) {
+    private fun loginWithFirebaseAuth(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener{
-                task ->
+            .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     _firebaseUser.postValue(auth.currentUser)
                 } else {
@@ -161,7 +97,9 @@ private fun loginWithFirebaseAuth(email: String, password: String) {
         username: String,
         email: String,
         password: String,
-        context: Context
+        context: Context,
+        imageUri: Uri?  // Thêm tham số imageUri
+
     ) {
         // First check if username already exists
         userRef.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(
@@ -170,7 +108,7 @@ private fun loginWithFirebaseAuth(email: String, password: String) {
                     if (dataSnapshot.exists()) {
                         _error.postValue("Tên người dùng đã tồn tại")
                     } else {
-                        proceedWithRegistration(name, username, email, password, context)
+                        proceedWithRegistration(name, username, email, password, context, imageUri)
                     }
                 }
 
@@ -185,7 +123,9 @@ private fun loginWithFirebaseAuth(email: String, password: String) {
         username: String,
         email: String,
         password: String,
-        context: Context
+        context: Context,
+        imageUri: Uri? // Nhận imageUri
+
     ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
@@ -193,7 +133,27 @@ private fun loginWithFirebaseAuth(email: String, password: String) {
                     _firebaseUser.postValue(auth.currentUser)
                     val uid = auth.currentUser?.uid
                     if (uid != null) {
-                        saveData(name, username, email, password, "", uid, context)
+                        if (imageUri != null) {
+                            saveImageToCloudinary(
+                                imageUri,
+                                context,
+                                uid,
+                                name,
+                                username,
+                                email,
+                                password
+                            ) // Tải ảnh lên Imgur
+                        } else {
+                            saveData(
+                                name,
+                                username,
+                                email,
+                                password,
+                                "",
+                                uid,
+                                context
+                            ) // Nếu không có ảnh, lưu với imageUrl rỗng
+                        }
                     } else {
                         _error.postValue("UID null, không thể lưu dữ liệu")
                     }
@@ -209,19 +169,20 @@ private fun loginWithFirebaseAuth(email: String, password: String) {
         email: String,
         password: String,
         imageUrl: String,
-        uid: String,
+        uid: String?,
         context: Context
     ) {
-        val userData = UserModel(name, username, email, password, imageUrl, uid)
+        val userData = UserModel(name, username, email, password, imageUrl)
 
-        userRef.child(uid).setValue(userData)
+        userRef.child(uid!!).setValue(userData)
             .addOnSuccessListener {
                 SharePref.storeData(name, username, email, imageUrl, context)
             }
             .addOnFailureListener { exception ->
                 _error.postValue("Lỗi lưu dữ liệu vào Realtime Database: ${exception.message}")
                 Log.e("AuthViewModel", "Lỗi lưu dữ liệu: ${exception.message}")
-                Toast.makeText(context, "Lỗi lưu dữ liệu: ${exception.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Lỗi lưu dữ liệu: ${exception.message}", Toast.LENGTH_SHORT)
+                    .show()
             }
     }
 
@@ -229,4 +190,74 @@ private fun loginWithFirebaseAuth(email: String, password: String) {
         auth.signOut()
         _firebaseUser.postValue(null)
     }
+
+    // lưu ảnh trên cloudinary
+    private fun saveImageToCloudinary(
+        imageUri: Uri,
+        context: Context,
+        uid: String,
+        name: String,
+        username: String,
+        email: String,
+        password: String
+    ) {
+        imageUri?.let { uri ->
+            MediaManager.get().upload(uri)
+                .unsigned("thread") // Thay thế bằng upload preset của bạn
+                .callback(object : UploadCallback {
+                    override fun onStart(requestId: String) {
+                        // Upload started
+                        Log.d("CloudinaryUpload", "Upload started with requestId: $requestId")
+
+                    }
+
+                    override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
+                        // Upload progress
+                        val progress = (bytes * 100 / totalBytes).toInt()
+                        Log.d("CloudinaryUpload", "Upload progress: $progress%")
+                    }
+
+                    override fun onSuccess(requestId: String, resultData: Map<*, *>) {
+                        val imageUrl = resultData["url"].toString()
+                        saveData(name, username, email, password,imageUrl, uid, context)
+                    }
+
+                    override fun onError(requestId: String, error: ErrorInfo) {
+                        // Upload error
+                        _error.postValue("Lỗi tải ảnh lên Cloudinary: ${error.description}")
+                    }
+
+                    override fun onReschedule(requestId: String, error: ErrorInfo) {
+                        // Upload reschedule
+                        Log.w("CloudinaryUpload", "Upload reschedule: ${error.description}")
+                    }
+                })
+                .dispatch()
+        }
+    }
 }
+//        // Lưu ảnh trên storage
+//    private val storageRef = Firebase.storage.reference
+//    private val imageRef = storageRef.child("users/${UUID.randomUUID()}.jpg")
+//    private fun saveImage(
+//        name: String,
+//        username: String,
+//        email: String,
+//        password: String,
+//        imageUri: Uri?,
+//        uid: String?,
+//        context: Context
+//    ) {
+//        val imageUploadTask = imageRef.putFile(imageUri!!)
+//        imageUploadTask.addOnCompleteListener {
+//            if (it.isSuccessful) {
+//                imageRef.downloadUrl.addOnCompleteListener{
+//                    saveData( name, username, email, password,
+//                        it.result.toString(), uid, context )
+//
+//
+//                }
+//            }
+//        }
+//    }
+

@@ -1,4 +1,4 @@
-package com.example.threads.Utils
+package com.example.threads.Data
 
 import android.content.Context
 
@@ -37,8 +37,12 @@ object SharePref {
     }
 
     fun getImageUrl( context: Context): String {
-        val shareReferces = context.getSharedPreferences("users", Context.MODE_PRIVATE)
-        return shareReferces.getString("imageurl", "")!!
+        val sharedPreferences = context.getSharedPreferences("users", Context.MODE_PRIVATE)
+        var imageUrl = sharedPreferences.getString("imageUrl", "") ?: ""
+        if (imageUrl.startsWith("http://")) {
+            imageUrl = imageUrl.replace("http://", "https://")
+        }
+        return imageUrl
     }
 
 

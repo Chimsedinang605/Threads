@@ -72,7 +72,7 @@ dependencies {
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
     implementation(platform(libs.firebase.bom))
     implementation("com.google.firebase:firebase-analytics")
-//    implementation(libs.google.firebase.database)
+    implementation(libs.google.firebase.database)
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
@@ -81,7 +81,17 @@ dependencies {
 //    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
     implementation("androidx.compose.runtime:runtime-livedata:1.7.8")
 
-    implementation ("com.google.firebase:firebase-appcheck-playintegrity:17.0.0")
-// or latest version
+    implementation ("com.google.firebase:firebase-appcheck-playintegrity:17.0.0") // or latest version
+    
+//    implementation ("com.facebook.android:facebook-login:latest.release")
+
+// https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation("com.google.code.gson:gson:2.11.0")
+// cloudinary
+//    implementation ("com.cloudinary:kotlin-url-gen:1.7.0")
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
 
 }

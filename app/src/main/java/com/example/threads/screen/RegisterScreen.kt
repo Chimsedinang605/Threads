@@ -1,8 +1,15 @@
 package com.example.threads.screen
 
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,7 +23,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -26,52 +35,53 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.threads.R
 import com.example.threads.navigation.Routes
 import com.example.threads.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScresn( navController: NavController  ) {
+fun RegisterScreen( navController: NavController  ) {
 
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-//
-//    var imageUri by remember { mutableStateOf<Uri?>(null) }
-//
-//    val permissionToRequest =
-//        if (
-//            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-//            android.Manifest.permission.READ_MEDIA_IMAGES
-//        }else{
-//            android.Manifest.permission.READ_EXTERNAL_STORAGE
-//        }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val permissionToRequest =
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            android.Manifest.permission.READ_MEDIA_IMAGES
+        }else{
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+        }
 
     val context = LocalContext.current
 
     val authViewModel : AuthViewModel = viewModel()
     val firebaseUser by authViewModel.firebaseUser.observeAsState(null)
-//
-//    val launcher =
-//        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {
-//           uri: Uri? ->
-//            imageUri = uri
-//        }
-//
-//    val permissionlauncher =
-//        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
-//            isGranted: Boolean ->
-//
-//            if (isGranted) {
-//
-//            } else {
-//
-//            }
-//    }
+
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {
+           uri: Uri? ->
+            imageUri = uri
+        }
+
+    val permissionlauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+            isGranted: Boolean ->
+
+            if (isGranted) {
+
+            } else {
+
+            }
+    }
 
     LaunchedEffect(firebaseUser) {
 
@@ -130,30 +140,30 @@ fun RegisterScresn( navController: NavController  ) {
 
                 )
 
-//                Image(
-//                    painter = if (imageUri == null) painterResource(id = R.drawable.person)
-//                    else rememberAsyncImagePainter(imageUri),
-//                    contentDescription = "Thread Logo"
-//                    ,modifier = Modifier
-//                        .size(100.dp)
-//                        .clip(CircleShape)
-//                        .background(Color.White)
-//                        .clickable {
-//
-//                            // handle image click
-//                            val isGranted = ContextCompat.checkSelfPermission(
-//                                context, permissionToRequest
-//                            ) == PackageManager.PERMISSION_GRANTED
-//
-//                            if (isGranted) {
-//                                launcher.launch("image/*")
-//                            } else {
-//                                permissionlauncher.launch(permissionToRequest)
-//                            }
-//
-//
-//                        },
-//                    contentScale = ContentScale.Crop)
+                Image(
+                    painter = if (imageUri == null) painterResource(id = R.drawable.profile)
+                    else rememberAsyncImagePainter(imageUri),
+                    contentDescription = "profile"
+                    ,modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .clickable {
+
+                            // handle image click
+                            val isGranted = ContextCompat.checkSelfPermission(
+                                context, permissionToRequest
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                            if (isGranted) {
+                                launcher.launch("image/*")
+                            } else {
+                                permissionlauncher.launch(permissionToRequest)
+                            }
+
+
+                        },
+                    contentScale = ContentScale.Crop)
 
 
                 Spacer(modifier = Modifier.height(40.dp))
@@ -300,7 +310,7 @@ fun RegisterScresn( navController: NavController  ) {
                             }
 
                             else -> {
-                                authViewModel.register(name, username, email, password, context)
+                                authViewModel.register(name, username, email, password ,context, imageUri)
                             }
                         }
                     }

@@ -1,9 +1,8 @@
 package com.example.threads.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.navigation.*
+import androidx.navigation.compose.*
 import com.example.threads.screen.*
 
 @Composable
@@ -11,7 +10,6 @@ fun NavGraph(navController: NavHostController) {
 
     NavHost(navController = navController,
         startDestination = Routes.Splash.routes ) {
-
 
         composable(Routes.Splash.routes){
             Splash(navController)
@@ -38,7 +36,7 @@ fun NavGraph(navController: NavHostController) {
             LoginScreen(navController)
         }
         composable(Routes.RegisterScreen.routes){
-            RegisterScresn(navController)
+            RegisterScreen(navController)
         }
         composable(Routes.ForgetScreen.routes){
             ForgetScreen( navController)
