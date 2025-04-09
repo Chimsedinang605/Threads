@@ -27,7 +27,7 @@ fun NavGraph(navController: NavHostController) {
             Search()
         }
         composable(Routes.AddThread.routes){
-            AddThreads()
+            AddThreads(navController)
         }
         composable(Routes.BottomNav.routes){
             BottomNav(navController)
