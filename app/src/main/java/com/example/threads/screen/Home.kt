@@ -1,10 +1,23 @@
 package com.example.threads.screen
 
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.runtime.*
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.threads.item_view.ThreadItem
 
 @Composable
 fun Home(){
-    Text(text = "Home")
+    LazyColumn {
+        items(30) {
+            ThreadItem()
+        }
 
+
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeView() {
+    Home()
 }
