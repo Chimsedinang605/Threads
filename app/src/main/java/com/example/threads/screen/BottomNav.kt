@@ -40,7 +40,7 @@ fun BottomNav(navController: NavHostController){
         modifier  = Modifier.padding(innerPadding)) {
 
         composable(route = Routes.Home.routes) {
-            Home()
+            Home(navController)
         }
         composable(Routes.Notification.routes){
             Notification()

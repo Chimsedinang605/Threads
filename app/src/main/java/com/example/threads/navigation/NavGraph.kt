@@ -15,7 +15,7 @@ fun NavGraph(navController: NavHostController) {
             Splash(navController)
         }
         composable(Routes.Home.routes){
-            Home()
+            Home(navController)
         }
         composable(Routes.Notification.routes){
             Notification()
@@ -43,6 +43,9 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(Routes.ResetPass.routes){
             ResetPass( navController)
+        }
+        composable(Routes.StartedScreen.routes){
+            StartedScreen( navController)
         }
 
     }
