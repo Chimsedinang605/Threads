@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="DACS3.Threads.app" target="21" />
+      <module name="JetBrains.DACS3.Threads.app" target="21" />
+      <module name="Threads.app" target="21" />
+      <module name="Threads.app~1" target="21" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

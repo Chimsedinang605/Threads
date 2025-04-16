@@ -46,7 +46,7 @@ fun Splash(navController: NavHostController){
             launchSingleTop = true
         }
         else
-            navController.navigate(Routes.LoginScreen.routes){
+            navController.navigate(Routes.StartedScreen.routes){
                 popUpTo(navController.graph.startDestinationId)
                 launchSingleTop = true
             }
