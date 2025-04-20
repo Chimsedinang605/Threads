@@ -1,4 +1,4 @@
-package com.example.threads.screen
+package com.example.threads.screen.Login_Logout
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -46,7 +46,7 @@ fun Splash(navController: NavHostController){
             launchSingleTop = true
         }
         else
-            navController.navigate(Routes.LoginScreen.routes){
+            navController.navigate(Routes.StartedScreen.routes){
                 popUpTo(navController.graph.startDestinationId)
                 launchSingleTop = true
             }
