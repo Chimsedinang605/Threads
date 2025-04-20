@@ -19,6 +19,28 @@ class HomeViewModel: ViewModel() {
         }
     }
 
+    // Add this utility function somewhere accessible in your project
+    fun formatTimeAgo(timestamp: String): String {
+        try {
+            val postTime = timestamp.toLong()
+            val currentTime = System.currentTimeMillis()
+            val difference = currentTime - postTime
+
+            // Convert to appropriate time unit
+            return when {
+                difference < 60_000 -> "just now"
+                difference < 3_600_000 -> "${difference / 60_000}m ago" // minutes
+                difference < 86_400_000 -> "${difference / 3_600_000}h ago" // hours
+                difference < 604_800_000 -> "${difference / 86_400_000}d ago" // days
+                difference < 2_592_000_000 -> "${difference / 604_800_000}w ago" // weeks
+                difference < 31_536_000_000 -> "${difference / 2_592_000_000}mo ago" // months
+                else -> "${difference / 31_536_000_000}y ago" // years
+            }
+        } catch (e: Exception) {
+            return "Unknown time"
+        }
+    }
+
     private fun fetchThreadsAndUsers( onResult: (List<Pair<ThreadModel, UserModel>>) -> Unit) {
         thread.addValueEventListener(object : ValueEventListener {
 

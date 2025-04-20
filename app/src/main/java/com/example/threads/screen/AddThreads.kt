@@ -39,6 +39,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun AddThreads(navHostController: NavHostController ){
+
     ConstraintLayout(modifier = Modifier.fillMaxSize().padding(16.dp).background(Color.White)) {
 
         val threadViewModel: AddThreadViewModel = viewModel()
@@ -48,6 +49,9 @@ fun AddThreads(navHostController: NavHostController ){
         var thread by remember { mutableStateOf("") }
 
         var imageUri by remember { mutableStateOf<Uri?>(null) }
+        var name by remember { mutableStateOf("") }
+
+
         // uses-permission
         val permissionToRequest =
             if (
@@ -56,7 +60,6 @@ fun AddThreads(navHostController: NavHostController ){
             }else{
                 android.Manifest.permission.READ_EXTERNAL_STORAGE
             }
-
         val launcher =
             rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {
                     uri: Uri? ->
@@ -194,6 +197,7 @@ fun AddThreads(navHostController: NavHostController ){
                     end.linkTo(parent.end)
                 }
                 .height(250.dp) ) {
+                // thread image
                 Image(
                     painter = rememberAsyncImagePainter(model = imageUri),
                     contentDescription = "Close",
@@ -218,14 +222,17 @@ fun AddThreads(navHostController: NavHostController ){
                 bottom.linkTo(parent.bottom, margin = 12.dp)
             }
         )
-
         TextButton(
+
             onClick = {
 
                 if (imageUri == null ) {
-                    threadViewModel.saveData(thread, FirebaseAuth.getInstance().currentUser!!.uid, "" )
+                    threadViewModel.saveData(thread, "",
+                        FirebaseAuth.getInstance().currentUser!!.uid  )
                 }else {
-                    threadViewModel.saveImage(thread, FirebaseAuth.getInstance().currentUser!!.uid, imageUri!!)
+                    threadViewModel.saveImage(thread, imageUri!!,
+                        FirebaseAuth.getInstance().currentUser!!.uid )
+
                 }
 
             },
@@ -262,6 +269,7 @@ fun AddThreads(navHostController: NavHostController ){
 
 
     }
+
 }
 
 @Composable

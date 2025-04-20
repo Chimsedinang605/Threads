@@ -1,7 +1,7 @@
 package com.example.threads.viewmodel
 
 import android.net.Uri
-import android.util.*
+import android.util.Log
 import androidx.lifecycle.*
 import com.cloudinary.android.*
 import com.cloudinary.android.callback.*
@@ -20,27 +20,57 @@ class AddThreadViewModel: ViewModel() {
 
     private val _error = MutableLiveData<String>()
 
-
      fun saveData(
         thread: String,
-        userID: String,
         imageUrl: String,
+        userID: String
     ) {
-        val threadData = ThreadModel( thread, imageUrl, userID, System.currentTimeMillis().toString() )
+         db.reference.child("users").child(userID).child(   "name")
+             .get()
+             .addOnSuccessListener{ snapshot ->
+                 val name = snapshot.value.toString()
 
-        userRef.child(userRef.push().key!!).setValue(threadData)
-            .addOnSuccessListener {
-                _isPost.postValue(true)
-            }
-            .addOnFailureListener {
-                _isPost.postValue(false)
-            }
-    }
+                 val threadData = ThreadModel(
+                     thread,
+                     imageUrl,
+                     userID,
+                     name = name,
+                     System.currentTimeMillis().toString()
+                 )
+
+                 userRef.child(userRef.push().key!!).setValue(threadData)
+                     .addOnSuccessListener {
+                         _isPost.postValue(true)
+                     }
+                     .addOnFailureListener {
+                         _isPost.postValue(false)
+                     }
+             }
+             .addOnFailureListener { error ->
+                 Log.e("AddThreadViewModel", "Lỗi khi tìm nạp tên người dùng: $error")
+                 val threadData = ThreadModel(
+                     thread = thread,
+                     image = imageUrl,
+                     userId = userID,
+                     name = "Người dùng ẩn danh", // Mặc định khi lỗi
+                     timeStam = System.currentTimeMillis().toString()
+                 )
+                 userRef.child(userRef.push().key!!).setValue(threadData)
+                     .addOnSuccessListener {
+                         _isPost.postValue(true)
+                     }
+                     .addOnFailureListener {
+                         _isPost.postValue(false)
+                     }
+             }
+         
+     }
+
     // lưu ảnh trên cloudinary
      fun saveImage(
         thread: String,
+        imageUri: Uri,
         userID: String,
-        imageUri: Uri
     ) {
         imageUri?.let { uri ->
             MediaManager.get().upload(uri)
@@ -48,19 +78,19 @@ class AddThreadViewModel: ViewModel() {
                 .callback(object : UploadCallback {
                     override fun onStart(requestId: String) {
                         // Upload started
-                        Log.d("CloudinaryUpload", "Upload started with requestId: $requestId")
+//                        Log.d("CloudinaryUpload", "Upload started with requestId: $requestId")
 
                     }
 
                     override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
                         // Upload progress
-                        val progress = (bytes * 100 / totalBytes).toInt()
-                        Log.d("CloudinaryUpload", "Upload progress: $progress%")
+//                        val progress = (bytes * 100 / totalBytes).toInt()
+//                        Log.d("CloudinaryUpload", "Upload progress: $progress%")
                     }
 
                     override fun onSuccess(requestId: String, resultData: Map<*, *>) {
                         val imageUrl = resultData["url"].toString()
-                        saveData(thread, userID,imageUrl)
+                        saveData(thread, imageUrl,userID)
                     }
 
                     override fun onError(requestId: String, error: ErrorInfo) {
@@ -70,7 +100,7 @@ class AddThreadViewModel: ViewModel() {
 
                     override fun onReschedule(requestId: String, error: ErrorInfo) {
                         // Upload reschedule
-                        Log.w("CloudinaryUpload", "Upload reschedule: ${error.description}")
+//                        Log.w("CloudinaryUpload", "Upload reschedule: ${error.description}")
                     }
                 })
                 .dispatch()

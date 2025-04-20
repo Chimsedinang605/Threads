@@ -172,7 +172,7 @@ class AuthViewModel: ViewModel() {
         uid: String?,
         context: Context
     ) {
-        val userData = UserModel(name, username, email, password, imageUrl)
+        val userData = UserModel(name, username, email, password, imageUrl, uid!!)
 
         userRef.child(uid!!).setValue(userData)
             .addOnSuccessListener {
@@ -236,28 +236,3 @@ class AuthViewModel: ViewModel() {
         }
     }
 }
-//        // Lưu ảnh trên storage
-//    private val storageRef = Firebase.storage.reference
-//    private val imageRef = storageRef.child("users/${UUID.randomUUID()}.jpg")
-//    private fun saveImage(
-//        name: String,
-//        username: String,
-//        email: String,
-//        password: String,
-//        imageUri: Uri?,
-//        uid: String?,
-//        context: Context
-//    ) {
-//        val imageUploadTask = imageRef.putFile(imageUri!!)
-//        imageUploadTask.addOnCompleteListener {
-//            if (it.isSuccessful) {
-//                imageRef.downloadUrl.addOnCompleteListener{
-//                    saveData( name, username, email, password,
-//                        it.result.toString(), uid, context )
-//
-//
-//                }
-//            }
-//        }
-//    }
-

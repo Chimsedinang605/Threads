@@ -1,20 +1,12 @@
 package com.example.threads.screen
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.*
+import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
@@ -22,11 +14,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.example.threads.R
 import com.example.threads.model.BottomNavitem
 import com.example.threads.navigation.Routes
+import com.example.threads.screen.Login_Logout.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +40,7 @@ fun BottomNav(navController: NavHostController){
             Profile(navController)
         }
         composable(Routes.Search.routes){
-            Search()
+            Search(navController)
         }
         composable(Routes.AddThread.routes){
             AddThreads(navController1)
@@ -66,6 +57,9 @@ fun BottomNav(navController: NavHostController){
         }
         composable(Routes.ResetPass.routes){
             ResetPass(navController)
+        }
+        composable(Routes.StartedScreen.routes){
+            StartedScreen(navController)
         }
     }
     }

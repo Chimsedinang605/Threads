@@ -6,6 +6,7 @@
       <module name="JetBrains.DACS3.Threads.app" target="21" />
       <module name="Threads.app" target="21" />
       <module name="Threads.app~1" target="21" />
+      <module name="Threads.app~2" target="21" />
     </bytecodeTargetLevel>
   </component>
 </project>
