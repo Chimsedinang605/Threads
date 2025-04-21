@@ -1,4 +1,4 @@
-package com.example.threads.screen
+package com.example.threads.View
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
@@ -110,14 +110,15 @@ fun Search(navHostController: NavHostController){
                 } else {
                     userList!!.filter {
                         it.name?.contains(search, ignoreCase = true) == true ||
-                                it.username?.contains(search, ignoreCase = true) == true
+                        it.username?.contains(search, ignoreCase = true) == true
                     }
                 }
 
                 items(filterItems) { user ->
                     UserItem(
                         user,
-                        navHostController )
+                        navHostController)
+
                 }
 
                 if (search.isNotEmpty() && filterItems.isEmpty()) {

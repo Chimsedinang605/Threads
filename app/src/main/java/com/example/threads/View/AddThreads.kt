@@ -1,4 +1,4 @@
-package com.example.threads.screen
+package com.example.threads.View
 
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -31,9 +31,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import com.example.threads.Data.SharePref
 import com.example.threads.R
 import com.example.threads.navigation.Routes
+import com.example.threads.Data.SharePref
 import com.example.threads.viewmodel.AddThreadViewModel
 import com.google.firebase.auth.FirebaseAuth
 

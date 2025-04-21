@@ -1,39 +1,81 @@
-package com.example.threads.screen.Login_Logout
+package com.example.threads.View.Login_Logout
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.threads.R
 import com.example.threads.navigation.Routes
 import com.example.threads.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController) {
-    var emailOrUsername by remember { mutableStateOf("") }
+fun RegisterScreen( navController: NavController  ) {
+
+    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val permissionToRequest =
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            Manifest.permission.READ_MEDIA_IMAGES
+        }else{
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
 
     val context = LocalContext.current
-    val authViewModel: AuthViewModel = viewModel()
+
+    val authViewModel : AuthViewModel = viewModel()
     val firebaseUser by authViewModel.firebaseUser.observeAsState(null)
+
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) {
+           uri: Uri? ->
+            imageUri = uri
+        }
+
+    val permissionlauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+            isGranted: Boolean ->
+
+            if (isGranted) {
+
+            } else {
+
+            }
+    }
 
     LaunchedEffect(firebaseUser) {
 
@@ -45,83 +87,156 @@ fun LoginScreen(navController: NavController) {
         }
     }
 
-
     val gradientColors = listOf(
-        Color(0xFFF8F8FF), // Very Light Gray
-        Color(0xFFE6E6FA), // Light Lavender
-        Color(0xFFF0F8FF)  // Alice Blue
 
 //        Color(0xFFFFF9F1),
 //        Color(0xFFF0E6FF), // Light purple at top
 //        Color(0xFFEAF6FF), // Light blue in middle
 //        Color(0xFFE8FFF0),
 //        Color(0xFFE5FFED)
-    // Light green at bottom
+        // Light green at bottom
+        Color(0xFFF8F8FF), // Very Light Gray
+        Color(0xFFE6E6FA), // Light Lavender
+        Color(0xFFF0F8FF)  // Alice Blue
     )
 
     Box(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .background(
-                brush = Brush.verticalGradient(
-                    colors = gradientColors
-                )
+                brush = Brush.verticalGradient(colors = gradientColors)
             )
     ) {
-
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(80.dp))
 
-            // Middle section with logo and inputs
+            Spacer(modifier = Modifier.height(50.dp))
+
             Column(
+                modifier = Modifier
+                    .weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
             ) {
-                //  logo with gradient
-                Box(
-                    modifier = Modifier
-                        .size(190.dp)
-                        .padding(bottom = 40.dp)
-                ) {
-                    // This is a placeholder for Instagram's gradient logo
-                    // In a real app, you would use an actual resource with the right colors
-                    Image(
-                        painter = painterResource(id = R.drawable.ig), // Placeholder
-                        contentDescription = "Thread Logo",
-                        modifier = Modifier.fillMaxSize()
-//                            .clip(CircleShape)
-                    )
-                }
 
                 Text(
-                    text = "Sign In",
+                    text = "Register",
                     fontSize = 40.sp,
                     fontWeight = FontWeight.ExtraBold,
                     modifier = Modifier.padding(bottom = 16.dp),
-                    color = Color(0xFF3B5AF5)
+                    color = Color(0xFF4285F4),
+                    fontFamily = FontFamily.Serif
+
                 )
 
-                Spacer(modifier = Modifier.height(30.dp))
-                // Username/email input field
+                Image(
+                    painter = if (imageUri == null) painterResource(id = R.drawable.profile)
+                    else rememberAsyncImagePainter(imageUri),
+                    contentDescription = "profile"
+                    ,modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .clickable {
+
+                            // handle image click
+                            val isGranted = ContextCompat.checkSelfPermission(
+                                context, permissionToRequest
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                            if (isGranted) {
+                                launcher.launch("image/*")
+                            } else {
+                                permissionlauncher.launch(permissionToRequest)
+                            }
+
+
+                        },
+                    contentScale = ContentScale.Crop)
+
+
+                Spacer(modifier = Modifier.height(40.dp))
+
                 OutlinedTextField(
-                    value = emailOrUsername,
-                    onValueChange = { emailOrUsername = it },
+                    value = name,
+                    onValueChange = {name = it },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "accout icon",
+                            tint = Color(0xFF4285F4)
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text
+                    ),
+                    label = {Text("Name", color = Color.Gray)},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.Blue,
+                        unfocusedTextColor = Color.Gray,
+                        focusedIndicatorColor = Color.Blue,
+                        unfocusedIndicatorColor = Color.LightGray,
+                        cursorColor = Color.Black,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true
+
+                )
+
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = {username = it },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "accout icon",
+                            tint = Color(0xFF4285F4)
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text
+                    ),
+                    label = {Text("Username", color = Color.Gray)},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.Blue,
+                        unfocusedTextColor = Color.Gray,
+                        focusedIndicatorColor = Color.Blue,
+                        unfocusedIndicatorColor = Color.LightGray,
+                        cursorColor = Color.Black,
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true
+
+                )
+
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email
                     ),
-                    leadingIcon = {Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Persion icon",
-                        tint = Color(0xFF0095F6)
-                    )},
-                    label = { Text("Email or mobile number",
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Email,
+                            contentDescription = "Email icon",
+                            tint = Color(0xFF4285F4)
+                        ) },
+                    label = { Text("Email",
                         color = Color.Gray) },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -140,9 +255,7 @@ fun LoginScreen(navController: NavController) {
                     singleLine = true
                 )
 
-//                Spacer(modifier = Modifier.height(4.dp))
-
-                // Password input field
+                 // Password input field
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -156,7 +269,7 @@ fun LoginScreen(navController: NavController) {
                             id = R.drawable.password_icon
                         ),
                         contentDescription = "Password icon",
-                        tint = Color.Unspecified
+                        tint = Color(0xFF0095F6)
                     )},
                     modifier = Modifier
                         .fillMaxWidth()
@@ -174,70 +287,52 @@ fun LoginScreen(navController: NavController) {
                     singleLine = true
                 )
 
-//                 Forgot pass
-                Row(
-                    modifier = Modifier.fillMaxWidth(), // Đảm bảo Row chiếm toàn bộ chiều rộng
-                    horizontalArrangement = Arrangement.End // Căn chỉnh các thành phần con sang phải
-                ) {
-                    TextButton(
-                        onClick = {
-                        /* Logic */
-                        navController.navigate(Routes.ForgetScreen.routes)
-                        {
-                            popUpTo(navController.graph.startDestinationId)
-                            launchSingleTop = true
-                        }
-                    },
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    ) {
-                        Text(
-                            text = "Forget password?",
-                            fontSize = 14.sp,
-                            color = Color.Gray,
-                        )
-                    }
-                }
-//
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
                 // Log in button
-                ElevatedButton(onClick = {
-//                    logic
-                    when {
-                        emailOrUsername.isEmpty() -> {
-                            Toast.makeText(context, "Vui lòng nhập email hoặc username.", Toast.LENGTH_SHORT).show()
-                        }
-                        password.isEmpty() -> {
-                            Toast.makeText(context, "Vui lòng nhập mật khẩu.", Toast.LENGTH_SHORT).show()
-                        }
+                ElevatedButton(
+                    onClick = {
+                        when {
+                            name.isEmpty() -> {
+                                Toast.makeText(context, "Vui lòng nhập tên.", Toast.LENGTH_SHORT).show()
+                            }
+                            email.isEmpty() -> {
+                                Toast.makeText(context, "Vui lòng nhập email.", Toast.LENGTH_SHORT).show()
+                            }
+                            password.isEmpty() -> {
+                                Toast.makeText(context, "Vui lòng nhập mật khẩu.", Toast.LENGTH_SHORT).show()
+                            }
 
-                        else -> {
-                            authViewModel.login( emailOrUsername, password)
+                            else -> {
+                                authViewModel.register(name, username, email, password ,context, imageUri)
+                            }
                         }
                     }
-
-                },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    ,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor =  Color(0xFF0095F6)
                     ),
                     shape = RoundedCornerShape(32.dp)
-                    ) {
+                ) {
                     Text(
-                        text = "Log In",
+                        text = "Sign Up",
                         color = Color.White,
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.ExtraBold
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Serif
                     )
                 }
-                // Or divider
 
+//                fb
                 Spacer(modifier = Modifier.height(20.dp))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+
                     HorizontalDivider(modifier = Modifier.weight(1f))
                     Text(
                         text = "Or",
@@ -247,7 +342,6 @@ fun LoginScreen(navController: NavController) {
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
-
 
                 Row (
                     modifier = Modifier.fillMaxWidth(),
@@ -284,7 +378,8 @@ fun LoginScreen(navController: NavController) {
                             Text(
                                 text = "Facebook",
                                 color = Color.Gray,
-                                fontSize = 16.sp
+                                fontSize = 16.sp,
+                                fontFamily = FontFamily.Serif
                             )
                         }
                     }
@@ -317,18 +412,16 @@ fun LoginScreen(navController: NavController) {
                             Text(
                                 text = "Google",
                                 color = Color.Gray,
-                                fontSize = 18.sp
+                                fontSize = 18.sp,
+                                fontFamily = FontFamily.Serif
                             )
                         }
                     }
-                }
+
+            }
 
 
             }
-            // Or divider
-
-
-
 //            Spacer(modifier = Modifier.height(50.dp))
 
 
@@ -338,40 +431,43 @@ fun LoginScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Don't have account?",
+                    text = "Do you have account?",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
                 TextButton(onClick = {
 
-                    navController.navigate(Routes.RegisterScreen.routes)
+
+                    navController.navigate(Routes.LoginScreen.routes)
                     {
                         popUpTo(navController.graph.startDestinationId)
                         launchSingleTop = true
                     }
 
+
                 },
                     modifier = Modifier.offset(x = (-5).dp)
                 ) {
                     Text(
-                        text = "Create account",
+                        text = "Login",
                         fontSize = 14.sp,
                         color = Color(0xFF3B5AF5),
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = FontFamily.Default
                     )
                 }
             }
 
-
-
         }
-    }
 
+
+    }
 
 }
 
 @Preview(showBackground = true)
 @Composable
-fun LoginView(){
-//    LoginScreen()
+fun SignUpView(){
+//    RegisterScresn()
+
 }

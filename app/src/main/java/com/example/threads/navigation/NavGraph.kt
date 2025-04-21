@@ -3,8 +3,8 @@ package com.example.threads.navigation
 import androidx.compose.runtime.*
 import androidx.navigation.*
 import androidx.navigation.compose.*
-import com.example.threads.screen.*
-import com.example.threads.screen.Login_Logout.*
+import com.example.threads.View.*
+import com.example.threads.View.Login_Logout.*
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -48,6 +48,12 @@ fun NavGraph(navController: NavHostController) {
         composable(Routes.StartedScreen.routes){
             StartedScreen(navController)
         }
+
+        composable(Routes.OtherUser.routes){
+            val data = it.arguments!!.getString("data")
+            OtherUser(navController, data!!)
+        }
+
 
     }
 }

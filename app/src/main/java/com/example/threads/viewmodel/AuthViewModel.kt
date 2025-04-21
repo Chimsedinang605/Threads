@@ -7,10 +7,12 @@ import android.widget.Toast
 import androidx.lifecycle.*
 import com.cloudinary.android.*
 import com.cloudinary.android.callback.*
-import com.example.threads.Data.*
 import com.example.threads.model.*
+import com.example.threads.Data.SharePref
+import com.google.firebase.Firebase
 import com.google.firebase.auth.*
 import com.google.firebase.database.*
+import com.google.firebase.firestore.firestore
 
 class AuthViewModel: ViewModel() {
 
@@ -172,6 +174,13 @@ class AuthViewModel: ViewModel() {
         uid: String?,
         context: Context
     ) {
+        val firestoreDb = Firebase.firestore
+        val followerRef = firestoreDb.collection("followers").document(uid!!)
+        val followingRef = firestoreDb.collection("following").document(uid!!)
+
+        followingRef.set(mapOf("followingIds" to listOf<String>()))
+        followerRef.set(mapOf("followerIds" to listOf<String>()))
+
         val userData = UserModel(name, username, email, password, imageUrl, uid!!)
 
         userRef.child(uid!!).setValue(userData)

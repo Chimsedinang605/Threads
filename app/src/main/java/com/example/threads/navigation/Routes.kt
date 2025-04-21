@@ -14,7 +14,6 @@ sealed class Routes(val routes: String) {
     object ForgetScreen : Routes("forget_screen")
     object ResetPass : Routes("reset_screen")
     object StartedScreen : Routes("start_screen")
-
-
+    object OtherUser : Routes("other_user/{data}")
 
 }

@@ -1,4 +1,4 @@
-package com.example.threads.screen
+package com.example.threads.View
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -31,26 +31,35 @@ import kotlinx.coroutines.delay
 @Composable
 fun Profile(navHostController: NavHostController) {
     val context = LocalContext.current
-
+    // View Models
     val authViewModel: AuthViewModel = viewModel()
+    val userViewModel: UserViewModel = viewModel()
+
     val firebaseUserState = authViewModel.firebaseUser.observeAsState(null)
     val firebaseUser = firebaseUserState.value
     var logoutTriggered by remember { mutableStateOf(false) }
 
+    // Get current user ID from Firebase Auth
+    val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-    val userViewModel: UserViewModel = viewModel()
     val threads by userViewModel.threads.observeAsState(emptyList())
+    val followerList by userViewModel.followerList.observeAsState(emptyList())
+    val followingList by userViewModel.followingList.observeAsState(emptyList())
+
+    // Fetch data when composable first loads
+    LaunchedEffect(currentUserUid) {
+        if (currentUserUid.isNotEmpty()) {
+            userViewModel.fetchThreads(currentUserUid)
+            userViewModel.getFollowers(currentUserUid)
+            userViewModel.getFollowing(currentUserUid)
+        }
+    }
 
     val user = UserModel(
         name = SharePref.getName(context),
+        username = SharePref.getUsername(context),
         imgUrl = SharePref.getImageUrl(context),
     )
-
-//    userViewModel.fetchThreads(FirebaseAuth.getInstance().currentUser!!.uid)
-    // Only fetch threads if the user is logged in
-    FirebaseAuth.getInstance().currentUser?.let { currentUser ->
-        userViewModel.fetchThreads(currentUser.uid)
-    }
 
     // Check if user is logged in
     LaunchedEffect(firebaseUser) {
@@ -64,12 +73,10 @@ fun Profile(navHostController: NavHostController) {
 
     LaunchedEffect(logoutTriggered) {
         if (logoutTriggered) {
-            // Give the logout operation time to complete
             delay(200)
-            // Navigate to login screen
             navHostController.navigate(Routes.LoginScreen.routes) {
                 popUpTo(navHostController.graph.startDestinationId)
-                launchSingleTop = true
+                    launchSingleTop = true
             }
         }
     }
@@ -79,28 +86,23 @@ fun Profile(navHostController: NavHostController) {
         color = Color.White
     ) {
         LazyColumn {
+            // header
             item {
-                // Custom App Bar instead of TopAppBar
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.White)
                         .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // lay username len dau
+
+                    // Username header
                     Text(
                         text = SharePref.getUsername(context),
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
-                    // more menu
-//                    IconButton(onClick = { /* Menu action */ }) {
-//                        Icon(
-//                            painter = painterResource(id = R.drawable.favorite),
-//                             contentDescription = "Menu")
-//                    }
                 }
 
                 // Profile Header
@@ -132,9 +134,9 @@ fun Profile(navHostController: NavHostController) {
                             modifier = Modifier.weight(1f),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            ProfileStat(count = threads?.size ?: 0, label = "Posts")
-                            ProfileStat(count = 0, label = "Followers")
-                            ProfileStat(count = 0, label = "Following")
+                            ProfileStat(count = threads.size, label = "bài viết")
+                            ProfileStat(count = followerList.size , label = "người theo dõi")
+                            ProfileStat(count = followingList.size , label = "đang theo dõi")
                         }
                     }
 
@@ -166,27 +168,18 @@ fun Profile(navHostController: NavHostController) {
                             onClick = { /* Edit Profile */ },
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Edit Profile")
+                            Text("Chỉnh sửa")
                         }
 
                         OutlinedButton(
                             onClick = {
-                                authViewModel.logout() },
+                                logoutTriggered = true
+                                authViewModel.logout()
+                            },
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Logout")
+                            Text("Đăng xuất")
                         }
-
-//                        OutlinedButton(
-//                            onClick = { /* Share Profile */ },
-//                            modifier = Modifier.width(40.dp)
-//                        ) {
-//                            Icon(
-//                                painter = painterResource(id = com.example.threads.R.drawable.favorite),
-//                                contentDescription = "Share",
-//                                modifier = Modifier.size(20.dp)
-//                            )
-//                        }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -216,15 +209,17 @@ fun Profile(navHostController: NavHostController) {
                 }
             }
 
-            // Threads/Posts
-            items(threads ?: emptyList()) { pair ->
+            items(threads ?: emptyList() ) { pair ->
                 ThreadItem(
                     thread = pair,
                     users = user,
                     navController = navHostController,
                     userId = SharePref.getUsername(context)
                 )
+
             }
+
+
         }
     }
 }

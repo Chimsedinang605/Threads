@@ -14,16 +14,24 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.*
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import com.example.threads.navigation.Routes
 import com.example.threads.model.UserModel
 
 @Composable
 fun UserItem(
     users: UserModel,
-    navController: NavHostController,
+    navHostController: NavHostController
 ){
     Column {
 
-        ConstraintLayout (modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 16.dp)){
+        ConstraintLayout (
+            modifier = Modifier.fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+            .clickable{
+                val routes = Routes.OtherUser.routes.replace("{data}", users.uid)
+                navHostController.navigate(routes)
+
+                }){
             val (userImage, userName, date, time, title, image) = createRefs()
             // avt
             Image(

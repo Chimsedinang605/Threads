@@ -1,4 +1,4 @@
-package com.example.threads.screen
+package com.example.threads.View
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items

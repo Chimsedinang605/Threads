@@ -1,4 +1,4 @@
-package com.example.threads.screen
+package com.example.threads.View
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -15,85 +15,86 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.threads.R
+import com.example.threads.View.Login_Logout.*
 import com.example.threads.model.BottomNavitem
 import com.example.threads.navigation.Routes
-import com.example.threads.screen.Login_Logout.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomNav(navController: NavHostController){
+fun BottomNav(navController: NavHostController) {
+    // Create a nested NavController for the bottom navigation
+    val bottomNavController = rememberNavController()
 
+    Scaffold(
+        bottomBar = { MyBottomBar(bottomNavController) }
+    ) { innerPadding ->
+        NavHost(
+            navController = bottomNavController,
+            startDestination = Routes.Home.routes,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(route = Routes.Home.routes) {
+                Home(navController)
+            }
+            composable(Routes.Notification.routes){
+                Notification()
+            }
+            composable(Routes.Profile.routes){
+                Profile(bottomNavController)
+            }
+            composable(Routes.Search.routes){
+                Search(navController)
+            }
+            composable(Routes.AddThread.routes){
+                AddThreads(bottomNavController)
+            }
 
-    val navController1 = rememberNavController()
+            composable(Routes.LoginScreen.routes){
+                LoginScreen(navController)
+            }
+            composable(Routes.RegisterScreen.routes){
+                RegisterScreen(navController)
+            }
+            composable(Routes.ForgetScreen.routes){
+                ForgetScreen(navController)
+            }
+            composable(Routes.ResetPass.routes){
+                ResetPass(navController)
+            }
+            composable(Routes.StartedScreen.routes){
+                StartedScreen(navController)
+            }
 
-    Scaffold (bottomBar = { MyBottomBar(navController1) }) {
-        innerPadding -> NavHost(navController = navController1, startDestination = Routes.Home.routes ,
-        modifier  = Modifier.padding(innerPadding)) {
-
-        composable(route = Routes.Home.routes) {
-            Home(navController)
-        }
-        composable(Routes.Notification.routes){
-            Notification()
-        }
-        composable(Routes.Profile.routes){
-            Profile(navController)
-        }
-        composable(Routes.Search.routes){
-            Search(navController)
-        }
-        composable(Routes.AddThread.routes){
-            AddThreads(navController1)
-        }
-
-        composable(Routes.LoginScreen.routes){
-            LoginScreen(navController)
-        }
-        composable(Routes.RegisterScreen.routes){
-            RegisterScreen(navController)
-        }
-        composable(Routes.ForgetScreen.routes){
-            ForgetScreen(navController)
-        }
-        composable(Routes.ResetPass.routes){
-            ResetPass(navController)
-        }
-        composable(Routes.StartedScreen.routes){
-            StartedScreen(navController)
         }
     }
-    }
-
 }
 
+// Improved MyBottomBar with consistent navigation
 @Composable
-fun MyBottomBar(navController1: NavHostController) {
+fun MyBottomBar(navController: NavHostController) {
+    val backStackEntry = navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry.value?.destination?.route
 
-    val backStackEntry = navController1.currentBackStackEntryAsState()
-
-    val list = listOf(
-
+    val navItems = listOf(
         BottomNavitem(
-            "Home", Routes.Home.routes, ImageVector.vectorResource(id = R.drawable.home )
+            "Home", Routes.Home.routes, ImageVector.vectorResource(id = R.drawable.home)
         ),
-
         BottomNavitem(
             "Search", Routes.Search.routes, ImageVector.vectorResource(id = R.drawable.search)
         ),
-
         BottomNavitem(
-            "AddThreads", Routes.AddThread.routes, ImageVector.vectorResource(id = R.drawable.add_post)
+            "AddThreads",
+            Routes.AddThread.routes,
+            ImageVector.vectorResource(id = R.drawable.add_post)
         ),
-
         BottomNavitem(
-            "Notification", Routes.Notification.routes, ImageVector.vectorResource(id = R.drawable.heart_icon)
+            "Notification",
+            Routes.Notification.routes,
+            ImageVector.vectorResource(id = R.drawable.heart_icon)
         ),
-
         BottomNavitem(
             "Profile", Routes.Profile.routes, ImageVector.vectorResource(id = R.drawable.person)
         )
-
-
     )
 
     BottomAppBar(
@@ -110,17 +111,17 @@ fun MyBottomBar(navController1: NavHostController) {
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            list.forEach { item ->
-                val selected = item.route == backStackEntry.value?.destination?.route //backStackEntry?.value?.destination?.route
+            navItems.forEach { item ->
+                val selected = item.route == currentRoute
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier
                         .clip(CircleShape)
-                        .clickable{
-                            navController1.navigate(item.route) {
-                                popUpTo(navController1.graph.findStartDestination().id) {
+                        .clickable {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
                                 launchSingleTop = true
@@ -137,8 +138,8 @@ fun MyBottomBar(navController1: NavHostController) {
                             .size(25.dp)
                             .scale(if (selected) 1.2f else 1f),
                         tint = if (selected)
-                            Color.Black  // Màu đen đậm khi selected
-                        else Color.Black.copy(alpha = 0.4f)  // Màu đen nhạt hơn khi không được chọn
+                            Color.Black
+                        else Color.Black.copy(alpha = 0.4f)
                     )
 
                     if (selected) {
@@ -153,10 +154,8 @@ fun MyBottomBar(navController1: NavHostController) {
                                 )
                         )
                     }
-
                 }
             }
         }
     }
-
 }
