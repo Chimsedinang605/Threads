@@ -1,4 +1,4 @@
-package com.example.threads.screen
+package com.example.threads.View.Login_Logout
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
