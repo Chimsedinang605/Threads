@@ -1,13 +1,15 @@
 package com.example.threads.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.example.threads.model.*
-import com.google.firebase.database.*
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 
-class SearchViewModel: ViewModel() {
+class SearchViewModel : ViewModel() {
 
-    private val db = FirebaseDatabase.getInstance()
-    private val usersRef = db.getReference("users")
+    private val db = FirebaseFirestore.getInstance()
+    private val usersRef = db.collection("users")
 
     private val _userList = MutableLiveData<List<UserModel>>()
     val userList: LiveData<List<UserModel>> = _userList
@@ -17,34 +19,30 @@ class SearchViewModel: ViewModel() {
     }
 
     private fun fetchUsers() {
-        usersRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
+        usersRef.get()
+            .addOnSuccessListener { snapshot ->
                 val result = mutableListOf<UserModel>()
-                for (userSnapshot in snapshot.children) {
-                    val user = userSnapshot.getValue(UserModel::class.java)
+                for (document in snapshot.documents) {
+                    val user = document.toObject<UserModel>()
                     user?.let { result.add(it) }
                 }
                 _userList.value = result
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Consider logging error or showing a message
+            .addOnFailureListener { e ->
+                Log.e("SearchViewModel", "Error fetching users: ${e.message}")
                 _userList.value = emptyList()
             }
-        })
     }
 
-    fun fetchUserFromThread(thread: ThreadModel, onResult:(UserModel) -> Unit) {
-        db.getReference("users").child(thread.userId)
-            .addListenerForSingleValueEvent(object : ValueEventListener{
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val user = snapshot.getValue(UserModel::class.java)
-                    user?.let(onResult)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Consider logging error
-                }
-            })
+    fun fetchUserFromThread(thread: ThreadModel, onResult: (UserModel) -> Unit) {
+        usersRef.document(thread.userId)
+            .get()
+            .addOnSuccessListener { document ->
+                val user = document.toObject<UserModel>()
+                user?.let(onResult)
+            }
+            .addOnFailureListener { e ->
+                Log.e("SearchViewModel", "Error fetching user: ${e.message}")
+            }
     }
 }

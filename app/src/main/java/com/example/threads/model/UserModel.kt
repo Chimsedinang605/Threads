@@ -7,4 +7,5 @@ data class UserModel(
    val password: String = "",
    val imgUrl: String = "",
    val uid: String = ""
+//   val bio: String
 )

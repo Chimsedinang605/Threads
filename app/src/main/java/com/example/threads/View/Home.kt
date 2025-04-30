@@ -18,9 +18,13 @@ fun Home(navHostController: NavHostController){
     val homeViewModel: HomeViewModel = viewModel()
     val threadAnduser by homeViewModel.threadAndUsers.observeAsState()
 
+//    val authViewModel: AuthViewModel = viewModel()
+//    val currentUserUid = authViewModel.currentUserUid ?: return
+
     LazyColumn {
         items(threadAnduser ?: emptyList()) { pairs ->
-            ThreadItem(thread = pairs.first,
+            ThreadItem(
+                thread = pairs.first,
                 users = pairs.second,
                 navHostController,
                 FirebaseAuth.getInstance().currentUser!!.uid )

@@ -4,7 +4,9 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -29,7 +31,7 @@ fun ThreadItem(
     thread: ThreadModel,
     users: UserModel,
     navHostController: NavHostController,
-    userId: String,
+    currentUserUid: String,
     userViewModel: UserViewModel = viewModel()
 ) {
     val viewModel: HomeViewModel = viewModel()
@@ -97,13 +99,10 @@ fun ThreadItem(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton( onClick = {}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.favorite),
-                    contentDescription = "Like",
-                    tint = Color.Black,
-                    modifier = Modifier.size(24.dp)  )
-            }
+            LikeButton(
+                postId = thread.threadId,
+                currentUserUid = currentUserUid
+            )
 
             // Comment button
             IconButton(
@@ -153,6 +152,52 @@ fun ThreadItem(
         HorizontalDivider(
             color = Color(0xFFEEEEEE),
             thickness = 0.5.dp
+        )
+    }
+}
+@Composable
+fun LikeButton(
+    postId: String,
+    currentUserUid: String,
+    modifier: Modifier = Modifier
+) {
+    val userViewModel: UserViewModel = viewModel()
+    var isLiked by remember { mutableStateOf(false) }
+    var likeCount by remember { mutableStateOf(0L) }
+
+    // Effect để lấy trạng thái like ban đầu
+    LaunchedEffect(postId, currentUserUid) {
+        userViewModel.getLikeStatus(postId, currentUserUid) { count, liked ->
+            likeCount = count
+            isLiked = liked
+        }
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
+        IconButton(
+            onClick = {
+                if (isLiked) {
+                    userViewModel.unLike(postId, currentUserUid)
+                } else {
+                    userViewModel.likePost(postId, currentUserUid)
+                }
+                // UI sẽ được cập nhật tự động thông qua listener
+            }
+        ) {
+            Icon(
+                imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                contentDescription = if (isLiked) "Unlike" else "Like",
+                tint = if (isLiked) Color.Red else Color.Gray
+            )
+        }
+
+        Text(
+            text = "$likeCount",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
         )
     }
 }

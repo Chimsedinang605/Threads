@@ -48,6 +48,9 @@ fun NavGraph(navController: NavHostController) {
         composable(Routes.StartedScreen.routes){
             StartedScreen(navController)
         }
+        composable(Routes.EditProfile.routes){
+            EditProfile(navController)
+        }
 
         composable(
             route = Routes.CommentsScreen.routes,

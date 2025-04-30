@@ -1,89 +1,81 @@
 package com.example.threads.viewmodel
 
-import android.util.*
+import android.util.Log
 import androidx.lifecycle.*
 import com.example.threads.model.*
-import com.google.firebase.database.*
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 
-class HomeViewModel: ViewModel() {
+class HomeViewModel : ViewModel() {
+    private val db = FirebaseFirestore.getInstance()
+    private val threadsCollection = db.collection("threads")
+    private val usersCollection = db.collection("users")
 
-    private val db = FirebaseDatabase.getInstance()
-    val thread = db.getReference("threads")
-
-    private val _threadAndUsers = MutableLiveData<List< Pair <ThreadModel, UserModel>>>()
+    private val _threadAndUsers = MutableLiveData<List<Pair<ThreadModel, UserModel>>>()
     val threadAndUsers: LiveData<List<Pair<ThreadModel, UserModel>>> = _threadAndUsers
 
     init {
         fetchThreadsAndUsers {
-            _threadAndUsers.value  = it
+            _threadAndUsers.value = it
         }
     }
 
-    // Add this utility function somewhere accessible in your project
     fun formatTimeAgo(timestamp: String): String {
-        try {
+        return try {
             val postTime = timestamp.toLong()
             val currentTime = System.currentTimeMillis()
             val difference = currentTime - postTime
 
-            // Convert to appropriate time unit
-            return when {
+            when {
                 difference < 60_000 -> "just now"
-                difference < 3_600_000 -> "${difference / 60_000}m ago" // minutes
-                difference < 86_400_000 -> "${difference / 3_600_000}h ago" // hours
-                difference < 604_800_000 -> "${difference / 86_400_000}d ago" // days
-                difference < 2_592_000_000 -> "${difference / 604_800_000}w ago" // weeks
-                difference < 31_536_000_000 -> "${difference / 2_592_000_000}mo ago" // months
-                else -> "${difference / 31_536_000_000}y ago" // years
+                difference < 3_600_000 -> "${difference / 60_000}m ago"
+                difference < 86_400_000 -> "${difference / 3_600_000}h ago"
+                difference < 604_800_000 -> "${difference / 86_400_000}d ago"
+                difference < 2_592_000_000 -> "${difference / 604_800_000}w ago"
+                difference < 31_536_000_000 -> "${difference / 2_592_000_000}mo ago"
+                else -> "${difference / 31_536_000_000}y ago"
             }
         } catch (e: Exception) {
-            return "Unknown time"
+            "Unknown time"
         }
     }
 
-    private fun fetchThreadsAndUsers( onResult: (List<Pair<ThreadModel, UserModel>>) -> Unit) {
-        thread.addValueEventListener(object : ValueEventListener {
+    private fun fetchThreadsAndUsers(onResult: (List<Pair<ThreadModel, UserModel>>) -> Unit) {
+        threadsCollection.get().addOnSuccessListener { snapshot ->
+            val result = mutableListOf<Pair<ThreadModel, UserModel>>()
+            val documents = snapshot.documents
 
-            override fun onDataChange(snapshot: DataSnapshot) {
+            if (documents.isEmpty()) {
+                onResult(result)
+                return@addOnSuccessListener
+            }
 
-                val result = mutableListOf<Pair<ThreadModel, UserModel>>()
-                for (threadSnapshot in snapshot.children) {
-                    val thread = threadSnapshot.getValue(ThreadModel::class.java)
-                    thread.let {
-                        fetchUserFromThread(it!!) {
-                            user ->
-                            result.add(0,Pair(it, user))
+            for (doc in documents) {
+                val thread = doc.toObject<ThreadModel>()
+                thread?.let { threadModel ->
+                    fetchUserFromThread(threadModel) { user ->
+                        result.add(0, Pair(threadModel, user))
 
-                            if (result.size == snapshot.childrenCount.toInt()) {
-                                onResult(result)
-                            }
+                        if (result.size == documents.size) {
+                            onResult(result)
                         }
                     }
                 }
-
             }
-
-            override fun onCancelled(error: DatabaseError) {
-            }
-
-        })
+        }.addOnFailureListener {
+            Log.e("HomeViewModel", "Error fetching threads: ${it.message}")
+        }
     }
 
-    fun fetchUserFromThread(thread: ThreadModel, onResult:(UserModel) -> Unit) {
-        db.getReference("users").child(thread.userId)
-            .addListenerForSingleValueEvent(object : ValueEventListener{
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val user = snapshot.getValue(UserModel::class.java)
-                    user?.let(onResult)
-//                    if (user != null) {
-//                        onResult(user)
-//                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                }
-            })
+    fun fetchUserFromThread(thread: ThreadModel, onResult: (UserModel) -> Unit) {
+        usersCollection.document(thread.userId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val user = snapshot.toObject<UserModel>()
+                user?.let(onResult)
+            }
+            .addOnFailureListener {
+                Log.e("HomeViewModel", "Error fetching user: ${it.message}")
+            }
     }
-
-
 }

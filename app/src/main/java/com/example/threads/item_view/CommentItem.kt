@@ -19,7 +19,7 @@ import coil.compose.AsyncImage
 import com.example.threads.model.*
 import com.example.threads.model.CommentModel
 import com.example.threads.viewmodel.*
-import com.google.firebase.database.*
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -34,18 +34,21 @@ fun CommentItem(
     var user by remember { mutableStateOf<UserModel?>(null) }
     var expanded by remember { mutableStateOf(false) }
 
-    // Lấy thông tin người dùng
+    // Lấy thông tin người dùng từ Firestore
     LaunchedEffect(comment.userId) {
-        userViewModel.userRef.child(comment.userId).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                user = snapshot.getValue(UserModel::class.java)
-            }
+        val userDoc = FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(comment.userId)
+            .get()
 
-            override fun onCancelled(error: DatabaseError) {
-                // Xử lý lỗi
-            }
-        })
+        userDoc.addOnSuccessListener { snapshot ->
+            val fetchedUser = snapshot.toObject(UserModel::class.java)
+            user = fetchedUser
+        }.addOnFailureListener {
+            // Xử lý lỗi ở đây (nếu cần)
+        }
     }
+
 
     Card(
         modifier = Modifier.fillMaxWidth(),

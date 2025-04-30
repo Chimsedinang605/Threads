@@ -7,21 +7,24 @@ import android.widget.Toast
 import androidx.lifecycle.*
 import com.cloudinary.android.*
 import com.cloudinary.android.callback.*
-import com.example.threads.model.*
 import com.example.threads.Data.SharePref
+import com.example.threads.model.*
 import com.google.firebase.Firebase
 import com.google.firebase.auth.*
-import com.google.firebase.database.*
 import com.google.firebase.firestore.firestore
 
 class AuthViewModel: ViewModel() {
 
     val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseDatabase.getInstance()
-    val userRef = db.reference.child("users")
+    private val db = Firebase.firestore
+    private val usersCollection = db.collection("users")
     private val _firebaseUser = MutableLiveData<FirebaseUser?>()
     val firebaseUser: LiveData<FirebaseUser?> = _firebaseUser
     private val _error = MutableLiveData<String>()
+    val error: LiveData<String> = _error
+
+//    val currentUserUid: String?
+//        get() = FirebaseAuth.getInstance().currentUser?.uid
 
     init {
         _firebaseUser.value = auth.currentUser
@@ -33,7 +36,6 @@ class AuthViewModel: ViewModel() {
     }
 
     fun login(userIdentifier: String, password: String) {
-
         if (userIdentifier.contains("@")) {
             if (isEmail(userIdentifier)) {
                 loginWithFirebaseAuth(userIdentifier, password)
@@ -44,44 +46,39 @@ class AuthViewModel: ViewModel() {
     }
 
     private fun loginWithUsername(username: String, password: String) {
-        userRef.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(
-            object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        for (userSnapshot in dataSnapshot.children) {
-                            val userData = userSnapshot.getValue(UserModel::class.java)
+        usersCollection.whereEqualTo("username", username)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    val userData = documents.documents[0].toObject(UserModel::class.java)
 
-                            if (userData != null) {
-                                if (userData.password == password) {
-                                    // Kiểm tra email hợp lệ trước khi dùng Firebase Auth
-                                    if (userData.email.isNotEmpty() && isEmail(userData.email)) {
-                                        auth.signInWithEmailAndPassword(userData.email, password)
-                                            .addOnCompleteListener { task ->
-                                                if (task.isSuccessful) {
-                                                    _firebaseUser.postValue(auth.currentUser)
-                                                } else {
-                                                    _error.postValue("Đăng nhập Firebase thất bại: ${task.exception?.message}")
-                                                }
-                                            }
-                                    } else {
-                                        _error.postValue("Email không hợp lệ")
+                    if (userData != null) {
+                        if (userData.password == password) {
+                            // Kiểm tra email hợp lệ trước khi dùng Firebase Auth
+                            if (userData.email.isNotEmpty() && isEmail(userData.email)) {
+                                auth.signInWithEmailAndPassword(userData.email, password)
+                                    .addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            _firebaseUser.postValue(auth.currentUser)
+                                        } else {
+                                            _error.postValue("Đăng nhập Firebase thất bại: ${task.exception?.message}")
+                                        }
                                     }
-                                    return
-                                }
+                            } else {
+                                _error.postValue("Email không hợp lệ")
                             }
+                        } else {
+                            _error.postValue("Sai mật khẩu")
                         }
-                        _error.postValue("Sai mật khẩu")
-                    } else {
-                        _error.postValue("Không tìm thấy người dùng")
                     }
+                } else {
+                    _error.postValue("Không tìm thấy người dùng")
                 }
-
-                override fun onCancelled(dataError: DatabaseError) {
-                    _error.postValue("Lỗi kết nối cơ sở dữ liệu: ${dataError.message}")
-                }
-            })
+            }
+            .addOnFailureListener { exception ->
+                _error.postValue("Lỗi kết nối cơ sở dữ liệu: ${exception.message}")
+            }
     }
-
 
     private fun loginWithFirebaseAuth(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
@@ -100,24 +97,21 @@ class AuthViewModel: ViewModel() {
         email: String,
         password: String,
         context: Context,
-        imageUri: Uri?  // Thêm tham số imageUri
-
+        imageUri: Uri?
     ) {
         // First check if username already exists
-        userRef.orderByChild("username").equalTo(username).addListenerForSingleValueEvent(
-            object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    if (dataSnapshot.exists()) {
-                        _error.postValue("Tên người dùng đã tồn tại")
-                    } else {
-                        proceedWithRegistration(name, username, email, password, context, imageUri)
-                    }
+        usersCollection.whereEqualTo("username", username)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    _error.postValue("Tên người dùng đã tồn tại")
+                } else {
+                    proceedWithRegistration(name, username, email, password, context, imageUri)
                 }
-
-                override fun onCancelled(dataError: DatabaseError) {
-                    _error.postValue("Lỗi kiểm tra tên người dùng: ${dataError.message}")
-                }
-            })
+            }
+            .addOnFailureListener { exception ->
+                _error.postValue("Lỗi kiểm tra tên người dùng: ${exception.message}")
+            }
     }
 
     private fun proceedWithRegistration(
@@ -126,8 +120,7 @@ class AuthViewModel: ViewModel() {
         email: String,
         password: String,
         context: Context,
-        imageUri: Uri? // Nhận imageUri
-
+        imageUri: Uri?
     ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
@@ -144,7 +137,7 @@ class AuthViewModel: ViewModel() {
                                 username,
                                 email,
                                 password
-                            ) // Tải ảnh lên Imgur
+                            )
                         } else {
                             saveData(
                                 name,
@@ -154,7 +147,7 @@ class AuthViewModel: ViewModel() {
                                 "",
                                 uid,
                                 context
-                            ) // Nếu không có ảnh, lưu với imageUrl rỗng
+                            )
                         }
                     } else {
                         _error.postValue("UID null, không thể lưu dữ liệu")
@@ -174,21 +167,20 @@ class AuthViewModel: ViewModel() {
         uid: String?,
         context: Context
     ) {
-        val firestoreDb = Firebase.firestore
-        val followerRef = firestoreDb.collection("followers").document(uid!!)
-        val followingRef = firestoreDb.collection("following").document(uid!!)
+        val followerRef = db.collection("followers").document(uid!!)
+        val followingRef = db.collection("following").document(uid!!)
 
         followingRef.set(mapOf("followingIds" to listOf<String>()))
         followerRef.set(mapOf("followerIds" to listOf<String>()))
 
         val userData = UserModel(name, username, email, password, imageUrl, uid!!)
 
-        userRef.child(uid!!).setValue(userData)
+        usersCollection.document(uid).set(userData)
             .addOnSuccessListener {
                 SharePref.storeData(name, username, email, imageUrl, context)
             }
             .addOnFailureListener { exception ->
-                _error.postValue("Lỗi lưu dữ liệu vào Realtime Database: ${exception.message}")
+                _error.postValue("Lỗi lưu dữ liệu vào Firestore: ${exception.message}")
                 Log.e("AuthViewModel", "Lỗi lưu dữ liệu: ${exception.message}")
                 Toast.makeText(context, "Lỗi lưu dữ liệu: ${exception.message}", Toast.LENGTH_SHORT)
                     .show()
@@ -210,14 +202,13 @@ class AuthViewModel: ViewModel() {
         email: String,
         password: String
     ) {
-        imageUri?.let { uri ->
+        imageUri.let { uri ->
             MediaManager.get().upload(uri)
                 .unsigned("thread") // Thay thế bằng upload preset của bạn
                 .callback(object : UploadCallback {
                     override fun onStart(requestId: String) {
                         // Upload started
                         Log.d("CloudinaryUpload", "Upload started with requestId: $requestId")
-
                     }
 
                     override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
@@ -228,7 +219,7 @@ class AuthViewModel: ViewModel() {
 
                     override fun onSuccess(requestId: String, resultData: Map<*, *>) {
                         val imageUrl = resultData["url"].toString()
-                        saveData(name, username, email, password,imageUrl, uid, context)
+                        saveData(name, username, email, password, imageUrl, uid, context)
                     }
 
                     override fun onError(requestId: String, error: ErrorInfo) {

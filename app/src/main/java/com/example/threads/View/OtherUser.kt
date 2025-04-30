@@ -199,8 +199,16 @@ fun OtherUser(userId: String,navHostController: NavHostController) {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            val buttonText = if (  followerList != null && followerList!!.isNotEmpty()
-                                && followerList!!.contains(currentUserUid)  ) "Đang theo dõi" else "Theo dõi"
+                            val isFollowing = followerList?.let {
+                                it.isNotEmpty() && it.contains(currentUserUid)
+                            } ?: false
+
+//                            val buttonText = if (  followerList != null
+//                                && followerList!!.isNotEmpty()
+//                                && followerList!!.contains(currentUserUid)  ) "Đang theo dõi" else "Theo dõi"
+
+                            val buttonText = if (followerList?.contains(currentUserUid) == true) "Đang theo dõi" else "Theo dõi"
+
                             val buttonColors = if (isFollowing) {
                                 ButtonDefaults.outlinedButtonColors(
                                     contentColor = Color.Gray
@@ -215,9 +223,11 @@ fun OtherUser(userId: String,navHostController: NavHostController) {
                                 onClick = {
 //
                                     if (currentUserUid != "") {
-                                        userViewModel.followUser(
-                                            userId, currentUserUid
-                                        )
+                                        if (isFollowing ) {
+                                            userViewModel.unfollowUser(userId, currentUserUid)
+                                        }else {
+                                            userViewModel.followUser(userId, currentUserUid )
+                                        }
                                     }
 
                                 },
@@ -261,7 +271,7 @@ fun OtherUser(userId: String,navHostController: NavHostController) {
                         thread = thread,
                         users = users!!,
                         navHostController = navHostController,
-                        userId = currentUserUid
+                        currentUserUid = currentUserUid
                     )
                 }
             }

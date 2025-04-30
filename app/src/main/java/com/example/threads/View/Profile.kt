@@ -154,7 +154,7 @@ fun Profile(navHostController: NavHostController) {
                     Spacer(modifier = Modifier.height(2.dp))
                     // bio
                     Text(
-                        text = "Threads User",
+                        text = SharePref.getBio(context),
                         fontSize = 14.sp,
                         color = Color.DarkGray
                     )
@@ -167,7 +167,10 @@ fun Profile(navHostController: NavHostController) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedButton(
-                            onClick = { /* Edit Profile */ },
+                            onClick = { /* Edit Profile */
+                                navHostController.navigate(Routes.EditProfile.routes)
+
+                            },
                             modifier = Modifier.weight(1f)
                         ) {
                             Text("Chỉnh sửa")
@@ -216,7 +219,7 @@ fun Profile(navHostController: NavHostController) {
                     thread = pair,
                     users = user,
                     navHostController = navHostController,
-                    userId = SharePref.getUsername(context)
+                    currentUserUid = SharePref.getUsername(context)
                 )
 
             }

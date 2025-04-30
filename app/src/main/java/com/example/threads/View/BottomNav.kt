@@ -66,6 +66,9 @@ fun BottomNav(navController: NavHostController) {
             composable(Routes.StartedScreen.routes){
                 StartedScreen(navController)
             }
+            composable(Routes.EditProfile.routes){
+                EditProfile(navController)
+            }
 
             composable(
                 route = Routes.OtherUser.routes, // "other_user/{userId}"
