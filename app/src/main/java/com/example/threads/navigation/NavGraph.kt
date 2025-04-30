@@ -1,9 +1,10 @@
 package com.example.threads.navigation
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.navigation.*
 import androidx.navigation.compose.*
-import com.example.threads.screen.*
+import com.example.threads.View.*
+import com.example.threads.View.Login_Logout.*
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -15,7 +16,7 @@ fun NavGraph(navController: NavHostController) {
             Splash(navController)
         }
         composable(Routes.Home.routes){
-            Home()
+            Home(navController)
         }
         composable(Routes.Notification.routes){
             Notification()
@@ -24,10 +25,10 @@ fun NavGraph(navController: NavHostController) {
             Profile(navController)
         }
         composable(Routes.Search.routes){
-            Search()
+            Search(navController)
         }
         composable(Routes.AddThread.routes){
-            AddThreads()
+            AddThreads(navController)
         }
         composable(Routes.BottomNav.routes){
             BottomNav(navController)
@@ -39,11 +40,33 @@ fun NavGraph(navController: NavHostController) {
             RegisterScreen(navController)
         }
         composable(Routes.ForgetScreen.routes){
-            ForgetScreen( navController)
+            ForgetScreen(navController)
         }
         composable(Routes.ResetPass.routes){
-            ResetPass( navController)
+            ResetPass(navController)
         }
+        composable(Routes.StartedScreen.routes){
+            StartedScreen(navController)
+        }
+
+        composable(
+            route = Routes.CommentsScreen.routes,
+            arguments = listOf(navArgument("postId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val postId = backStackEntry.arguments?.getString("postId")
+            if (postId != null) {
+                CommentsScreen(postId = postId, navHostController = navController)
+            }
+        }
+
+        composable(
+            route = Routes.OtherUser.routes, // "other_user/{userId}"
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            OtherUser(userId = userId!!, navHostController =  navController)
+        }
+
 
     }
 }

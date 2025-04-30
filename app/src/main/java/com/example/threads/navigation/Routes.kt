@@ -13,6 +13,9 @@ sealed class Routes(val routes: String) {
     object RegisterScreen : Routes("register_screen")
     object ForgetScreen : Routes("forget_screen")
     object ResetPass : Routes("reset_screen")
+    object StartedScreen : Routes("start_screen")
+    object OtherUser : Routes("other_user/{userId}")
+    object CommentsScreen : Routes("comment_screen/{postId}")
 
 
 }

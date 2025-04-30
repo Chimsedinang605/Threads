@@ -1,22 +1,18 @@
-package com.example.threads.screen
+package com.example.threads.View.Login_Logout
 
+import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
@@ -28,10 +24,8 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.font.*
+import androidx.compose.ui.text.input.*
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,9 +50,9 @@ fun RegisterScreen( navController: NavController  ) {
     val permissionToRequest =
         if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
-            android.Manifest.permission.READ_MEDIA_IMAGES
+            Manifest.permission.READ_MEDIA_IMAGES
         }else{
-            android.Manifest.permission.READ_EXTERNAL_STORAGE
+            Manifest.permission.READ_EXTERNAL_STORAGE
         }
 
     val context = LocalContext.current
@@ -374,7 +368,7 @@ fun RegisterScreen( navController: NavController  ) {
                             verticalAlignment = Alignment.CenterVertically
                         ){
                             Icon(
-                                painter = painterResource(id  = com.example.threads.R.drawable.facebook),
+                                painter = painterResource(id  = R.drawable.facebook),
                                 contentDescription = "Facebook",
                                 tint = Color(0xFF1877F2),
                                 modifier = Modifier.size(18.dp)
