@@ -52,7 +52,7 @@ import kotlinx.coroutines.delay
 
 
 @Composable
-fun OtherUser(navHostController: NavHostController, uid: String) {
+fun OtherUser(userId: String,navHostController: NavHostController) {
     val context = LocalContext.current
 
     val authViewModel: AuthViewModel = viewModel()
@@ -76,16 +76,13 @@ fun OtherUser(navHostController: NavHostController, uid: String) {
 
 
     // Fetch data only once when the composable is created
-    LaunchedEffect(uid) {
-        userViewModel.fetchUser(uid)
-        userViewModel.fetchThreads(uid)
-        userViewModel.getFollowers(uid)
-        userViewModel.getFollowing(uid)
+    LaunchedEffect(userId) {
+        userViewModel.fetchUser(userId)
+        userViewModel.fetchThreads(userId)
+        userViewModel.getFollowers(userId)
+        userViewModel.getFollowing(userId)
     }
 
-    // Check if current user is following this user
-    // followerList != null && followerList!!.isNotEmpty()
-    //     && followerList!!.contains(currentUserUid
     LaunchedEffect(followerList) {
         isFollowing = followerList != null && followerList!!.isNotEmpty()
                 && followerList!!.contains(currentUserUid)
@@ -216,18 +213,13 @@ fun OtherUser(navHostController: NavHostController, uid: String) {
 
                             OutlinedButton(
                                 onClick = {
-//                                    if (!isFollowing && currentUserUid != uid) {
-//                                        userViewModel.followUser(
-//                                            userId = uid,
-//                                            currentUserUid = currentUserUid
-//                                        )
-//                                        isFollowing = true
-//                                    }
+//
                                     if (currentUserUid != "") {
                                         userViewModel.followUser(
-                                            uid, currentUserUid
+                                            userId, currentUserUid
                                         )
                                     }
+
                                 },
                                 modifier = Modifier.weight(1f),
                                 colors = buttonColors
@@ -268,7 +260,7 @@ fun OtherUser(navHostController: NavHostController, uid: String) {
                     ThreadItem(
                         thread = thread,
                         users = users!!,
-                        navController = navHostController,
+                        navHostController = navHostController,
                         userId = currentUserUid
                     )
                 }

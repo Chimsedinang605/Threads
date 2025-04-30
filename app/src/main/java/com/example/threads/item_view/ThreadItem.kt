@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
@@ -19,18 +20,19 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.threads.R
 import com.example.threads.model.*
+import com.example.threads.navigation.Routes
 import com.example.threads.viewmodel.HomeViewModel
+import com.example.threads.viewmodel.UserViewModel
 
 @Composable
 fun ThreadItem(
     thread: ThreadModel,
     users: UserModel,
-    navController: NavHostController,
+    navHostController: NavHostController,
     userId: String,
-    viewModel: HomeViewModel = viewModel() // Get instance of the view model
-
+    userViewModel: UserViewModel = viewModel()
 ) {
-    val timeAgo = viewModel.formatTimeAgo(thread.timeStam) // Assuming timestamp is stored in thread model
+    val viewModel: HomeViewModel = viewModel()
 
     Column(
         modifier = Modifier
@@ -46,7 +48,7 @@ fun ThreadItem(
             // User avatar
             Image(
                 painter = rememberAsyncImagePainter(model = users.imgUrl),
-                contentDescription = "User avatar",
+                contentDescription = "Ảnh đại diện",
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape),
@@ -95,21 +97,30 @@ fun ThreadItem(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.favorite),
-                contentDescription = "Like",
-                tint = Color.Black,
-                modifier = Modifier.size(24.dp)
-            )
+            IconButton( onClick = {}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.favorite),
+                    contentDescription = "Like",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)  )
+            }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            // Comment button
+            IconButton(
+                onClick = {
+                    val routes = Routes.CommentsScreen.routes.replace("{postId}", thread.threadId)
+                    navHostController.navigate(routes)
 
-            Icon(
-                painter = painterResource(id = R.drawable.chat),
-                contentDescription = "Comment",
-                tint = Color.Black,
-                modifier = Modifier.size(22.dp)
-            )
+                }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.chat),
+                    contentDescription = "Comment",
+                    tint = Color.Black,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+
         }
 
         // Post content - Text
@@ -135,14 +146,6 @@ fun ThreadItem(
                     )
                 }
             }
-
-            // Time indicator
-            Text(
-                text = timeAgo, // This would come from thread model in a real implementation
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
-                modifier = Modifier.padding(top = 4.dp)
-            )
         }
 
         // Divider between posts
@@ -153,9 +156,3 @@ fun ThreadItem(
         )
     }
 }
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun ShowThreadList(){
-////    ThreadItem()
-//}

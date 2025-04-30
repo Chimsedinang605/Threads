@@ -13,7 +13,9 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 import com.example.threads.R
 import com.example.threads.View.Login_Logout.*
 import com.example.threads.model.BottomNavitem
@@ -43,7 +45,7 @@ fun BottomNav(navController: NavHostController) {
                 Profile(bottomNavController)
             }
             composable(Routes.Search.routes){
-                Search(navController)
+                Search(bottomNavController)
             }
             composable(Routes.AddThread.routes){
                 AddThreads(bottomNavController)
@@ -64,6 +66,25 @@ fun BottomNav(navController: NavHostController) {
             composable(Routes.StartedScreen.routes){
                 StartedScreen(navController)
             }
+
+            composable(
+                route = Routes.OtherUser.routes, // "other_user/{userId}"
+                arguments = listOf(navArgument("userId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val userId = backStackEntry.arguments?.getString("userId")
+                OtherUser(userId = userId!!, navHostController =  navController)
+            }
+
+            composable(
+                route = Routes.CommentsScreen.routes,
+                arguments = listOf(navArgument("postId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val postId = backStackEntry.arguments?.getString("postId")
+                if (postId != null) {
+                    CommentsScreen(postId = postId, navHostController = navController)
+                }
+            }
+
 
         }
     }

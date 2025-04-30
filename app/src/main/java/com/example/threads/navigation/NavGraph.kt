@@ -49,9 +49,22 @@ fun NavGraph(navController: NavHostController) {
             StartedScreen(navController)
         }
 
-        composable(Routes.OtherUser.routes){
-            val data = it.arguments!!.getString("data")
-            OtherUser(navController, data!!)
+        composable(
+            route = Routes.CommentsScreen.routes,
+            arguments = listOf(navArgument("postId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val postId = backStackEntry.arguments?.getString("postId")
+            if (postId != null) {
+                CommentsScreen(postId = postId, navHostController = navController)
+            }
+        }
+
+        composable(
+            route = Routes.OtherUser.routes, // "other_user/{userId}"
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            OtherUser(userId = userId!!, navHostController =  navController)
         }
 
 

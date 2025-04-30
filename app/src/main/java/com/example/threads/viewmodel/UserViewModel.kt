@@ -1,13 +1,11 @@
 package com.example.threads.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.*
 import com.example.threads.model.*
 import com.google.firebase.Firebase
 import com.google.firebase.database.*
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.*
 
 class UserViewModel: ViewModel() {
 
@@ -24,6 +22,16 @@ class UserViewModel: ViewModel() {
     private val _followingList = MutableLiveData(listOf<String>())
     val followingList: LiveData<List<String>> get() = _followingList
 
+    private val _CommentList = MutableLiveData(listOf<CommentModel>())
+    val CommentList: LiveData<List<CommentModel>> get() = _CommentList
+
+    private val _LikeList = MutableLiveData(listOf<String>())
+    val LikeList: LiveData<List<String>> get() = _LikeList
+
+    // ListenerRegistration để ngừng lắng nghe bình luận khi ViewModel bị hủy
+    private var commentsListenerRegistration: ListenerRegistration? = null
+
+
     private val _users = MutableLiveData(UserModel())
     val users: LiveData<UserModel> get() = _users
 
@@ -35,6 +43,7 @@ class UserViewModel: ViewModel() {
                     _users.postValue(it)
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
                 // Handle error
             }
@@ -42,17 +51,19 @@ class UserViewModel: ViewModel() {
     }
 
     fun fetchThreads(uid: String) {
-        threadRef.orderByChild("userId").equalTo(uid).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val threadList = snapshot.children.mapNotNull {
-                    it.getValue(ThreadModel::class.java)
+        threadRef.orderByChild("userId").equalTo(uid)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val threadList = snapshot.children.mapNotNull {
+                        it.getValue(ThreadModel::class.java)
+                    }
+                    _threads.postValue(threadList)
                 }
-                _threads.postValue(threadList)
-            }
-            override fun onCancelled(error: DatabaseError) {
-                // Handle error
-            }
-        })
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle error
+                }
+            })
     }
 
     val firestoreDb = Firebase.firestore
@@ -98,6 +109,96 @@ class UserViewModel: ViewModel() {
                 } else {
                     // Document doesn't exist, set empty list
                     _followingList.postValue(emptyList())
+                }
+            }
+    }
+
+    val comments = mutableStateOf<List<CommentModel>>(listOf())
+    val commentRef = db.getReference("comments")
+    /**
+     * Thêm bình luận mới vào một thread cụ thể
+     */
+    fun addComment(
+        threadId: String,
+        userId: String,
+        comment: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        // Kiểm tra các tham số đầu vào
+        if (threadId.isEmpty()) {
+            onFailure(IllegalArgumentException("ThreadId không được để trống"))
+            return
+        }
+
+        if (userId.isEmpty()) {
+            onFailure(IllegalArgumentException("UserId không được để trống"))
+            return
+        }
+
+        if (comment.isBlank()) {
+            onFailure(IllegalArgumentException("Nội dung bình luận không được để trống"))
+            return
+        }
+
+        // Tạo dữ liệu bình luận
+        val commentData = hashMapOf(
+            "comment" to comment,
+            "threadId" to threadId,
+            "userId" to userId
+//            "timestamp" to FieldValue.serverTimestamp()
+        )
+
+        // Thêm bình luận vào Firestore
+        firestoreDb.collection("comments")
+            .document(threadId)
+            .collection("thread_comments")
+            .add(commentData)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                onFailure(e)
+            }
+    }
+
+    /**
+     * Lấy danh sách bình luận của một thread
+     */
+    fun fetchComments(threadId: String) {
+        // Hủy lắng nghe cũ nếu có
+        commentsListenerRegistration?.remove()
+
+        if (threadId.isEmpty()) {
+            _CommentList.postValue(emptyList())
+            return
+        }
+
+        // Đăng ký lắng nghe mới
+        commentsListenerRegistration = firestoreDb.collection("comments")
+            .document(threadId)
+            .collection("thread_comments")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    _CommentList.postValue(emptyList())
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val commentList = snapshot.documents.mapNotNull { doc ->
+                        try {
+                            val data = doc.data ?: return@mapNotNull null
+                            CommentModel(
+                                userId = data["userId"] as? String ?: "",
+                                comment = data["comment"] as? String ?: ""
+                            )
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                    _CommentList.postValue(commentList)
+                } else {
+                    _CommentList.postValue(emptyList())
                 }
             }
     }

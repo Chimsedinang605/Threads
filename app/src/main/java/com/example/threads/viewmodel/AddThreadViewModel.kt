@@ -15,12 +15,14 @@ class AddThreadViewModel: ViewModel() {
     private val db = FirebaseDatabase.getInstance()
     val userRef = db.reference.child("threads")
 
+
     private val _isPost = MutableLiveData<Boolean>()
     val isPost: LiveData<Boolean> = _isPost
 
     private val _error = MutableLiveData<String>()
 
      fun saveData(
+//        threadId: String,
         thread: String,
         imageUrl: String,
         userID: String
@@ -29,8 +31,10 @@ class AddThreadViewModel: ViewModel() {
              .get()
              .addOnSuccessListener{ snapshot ->
                  val name = snapshot.value.toString()
-
+                 val newThreadRef = userRef.push()
+                 val threadId = newThreadRef.key!! // Lấy ID tự động
                  val threadData = ThreadModel(
+                     threadId,
                      thread,
                      imageUrl,
                      userID,
@@ -38,7 +42,7 @@ class AddThreadViewModel: ViewModel() {
                      System.currentTimeMillis().toString()
                  )
 
-                 userRef.child(userRef.push().key!!).setValue(threadData)
+                 newThreadRef.setValue(threadData)
                      .addOnSuccessListener {
                          _isPost.postValue(true)
                      }
@@ -48,14 +52,17 @@ class AddThreadViewModel: ViewModel() {
              }
              .addOnFailureListener { error ->
                  Log.e("AddThreadViewModel", "Lỗi khi tìm nạp tên người dùng: $error")
+                 val newThreadRef = userRef.push()
+                 val threadId = newThreadRef.key!!
                  val threadData = ThreadModel(
+                     threadId   = threadId,
                      thread = thread,
                      image = imageUrl,
                      userId = userID,
                      name = "Người dùng ẩn danh", // Mặc định khi lỗi
                      timeStam = System.currentTimeMillis().toString()
                  )
-                 userRef.child(userRef.push().key!!).setValue(threadData)
+                 userRef.setValue(threadData)
                      .addOnSuccessListener {
                          _isPost.postValue(true)
                      }
@@ -90,7 +97,7 @@ class AddThreadViewModel: ViewModel() {
 
                     override fun onSuccess(requestId: String, resultData: Map<*, *>) {
                         val imageUrl = resultData["url"].toString()
-                        saveData(thread, imageUrl,userID)
+                        saveData( thread, imageUrl,userID)
                     }
 
                     override fun onError(requestId: String, error: ErrorInfo) {

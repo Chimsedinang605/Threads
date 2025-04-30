@@ -52,6 +52,8 @@ fun Profile(navHostController: NavHostController) {
             userViewModel.fetchThreads(currentUserUid)
             userViewModel.getFollowers(currentUserUid)
             userViewModel.getFollowing(currentUserUid)
+
+            userViewModel.fetchComments(currentUserUid)
         }
     }
 
@@ -213,7 +215,7 @@ fun Profile(navHostController: NavHostController) {
                 ThreadItem(
                     thread = pair,
                     users = user,
-                    navController = navHostController,
+                    navHostController = navHostController,
                     userId = SharePref.getUsername(context)
                 )
 

@@ -31,9 +31,9 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import com.example.threads.Data.SharePref
 import com.example.threads.R
 import com.example.threads.navigation.Routes
-import com.example.threads.Data.SharePref
 import com.example.threads.viewmodel.AddThreadViewModel
 import com.google.firebase.auth.FirebaseAuth
 
@@ -49,7 +49,7 @@ fun AddThreads(navHostController: NavHostController ){
         var thread by remember { mutableStateOf("") }
 
         var imageUri by remember { mutableStateOf<Uri?>(null) }
-        var name by remember { mutableStateOf("") }
+        var threadId by remember { mutableStateOf("") }
 
 
         // uses-permission

@@ -14,8 +14,8 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.*
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
-import com.example.threads.navigation.Routes
 import com.example.threads.model.UserModel
+import com.example.threads.navigation.Routes
 
 @Composable
 fun UserItem(
@@ -28,7 +28,7 @@ fun UserItem(
             modifier = Modifier.fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 16.dp)
             .clickable{
-                val routes = Routes.OtherUser.routes.replace("{data}", users.uid)
+                val routes = Routes.OtherUser.routes.replace("{userId}", users.uid)
                 navHostController.navigate(routes)
 
                 }){
