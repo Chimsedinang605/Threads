@@ -38,9 +38,7 @@ fun BottomNav(navController: NavHostController) {
             composable(route = Routes.Home.routes) {
                 Home(navController)
             }
-            composable(Routes.Notification.routes){
-                Notification()
-            }
+
             composable(Routes.Profile.routes){
                 Profile(bottomNavController)
             }

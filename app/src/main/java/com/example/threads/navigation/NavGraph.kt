@@ -18,9 +18,7 @@ fun NavGraph(navController: NavHostController) {
         composable(Routes.Home.routes){
             Home(navController)
         }
-        composable(Routes.Notification.routes){
-            Notification()
-        }
+
         composable(Routes.Profile.routes){
             Profile(navController)
         }
